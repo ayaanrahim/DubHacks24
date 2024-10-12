@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from manim import *
 import os
+import requests
+import json
 
 def render_manim_visualization(code):
     class CustomScene(Scene):
@@ -36,3 +38,32 @@ def render_visualization():
         jsonify({'video_path': video_path}), 200
     else:
         return jsonify({'error': 'Failed to render visualization.'}), 500
+    
+def perplexity_query(messages):
+    url = "https://api.perplexity.ai/chat/completions"
+
+    payload = {
+        "model": "llama-3.1-sonar-small-128k-online",
+        "messages": messages,
+        "max_tokens": 100,
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "return_citations": True,
+        "search_domain_filter": ["perplexity.ai"],
+        "return_images": False,
+        "return_related_questions": False,
+        "search_recency_filter": "month",
+        "top_k": 0,
+        "stream": False,
+        "presence_penalty": 0,
+        "frequency_penalty": 1
+    }
+    headers = {
+        "Authorization": "Bearer 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",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", url, json=payload, headers=headers)
+    response_data = json.loads(response.text)
+    content = response_data['choices'][0]['message']['content']
+    return content, 200
