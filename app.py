@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from questions import MATH_QUESTIONS
+import openai
 
 app = Flask(__name__)
 CORS(app)
+
+openai.api_key = "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"
+openai.api_base = "https://api.perplexity.ai"
 
 @app.route('/api/questions', methods=['GET'])
 def get_questions():
