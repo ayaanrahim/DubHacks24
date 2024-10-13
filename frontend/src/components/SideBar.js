@@ -4,11 +4,12 @@ import { Card, Button } from "@radix-ui/themes";
 import React, { useState } from "react";
 import * as Collapsible from "@radix-ui/react-collapsible";
 
-const SideBar = () => {
+const SideBar = ({onQuestionData}) => {
   // States for the user's selection
   const [selectedAssessmentIndex, setSelectedAssessmentIndex] = useState(null);
   const [selectedSectionIndex, setSelectedSectionIndex] = useState(null);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
+  const [questionData, setQuestionData] = useState(null);
 
   const styles = {
     collapsibleContentContainer: {
@@ -52,7 +53,48 @@ const SideBar = () => {
   };
 
   const handleSectionClick = (index) => {
+    
     setSelectedSectionIndex(index);
+    fetch('http://127.0.0.1:5000/api/start_session', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Session started:', data);
+        // Handle the response data as needed
+      })
+      .catch(error => {
+        console.error('Error starting session:', error);
+      });
+      fetch('http://127.0.0.1:5000/api/get_question', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          //console.log('Questions:', data);
+          setQuestionData(data);
+          onQuestionData(data);
+          // Handle the response data as needed
+        })
+        .catch(error => {
+          console.error('Error starting session:', error);
+        });
   };
 
   const handleQuestionClick = (index) => {
