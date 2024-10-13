@@ -9,6 +9,7 @@ import videoFile2 from '../2.mp4';
 import videoFile3 from '../3.mp4';
 import videoFile4 from '../4.mp4';
 import videoFile5 from '../5.mp4';
+import ReactMarkdown from 'react-markdown';
 
 const Practice = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -135,7 +136,7 @@ const Practice = () => {
           <section>
             {/* perplexity chat here */}
             <div className="Rrow1">
-              <p>{response}</p>
+              <ReactMarkdown>{response}</ReactMarkdown>
             </div>
             {/* send message to perplexity */}
             <div className="Rrow2">
