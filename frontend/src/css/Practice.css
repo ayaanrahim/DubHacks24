@@ -1,0 +1,64 @@
+.flex-container {
+  display: flex;
+  height: 100vh;
+  color: white;
+}
+
+.side-bar {
+  width: 15%;
+  background-color: #2d2d2d;
+  height: 90%
+}
+
+.left-col{
+  flex: 0.7;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+.right-col{
+  flex: 0.3;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.left-col section, .right-col section {
+  display: flex;
+  flex-direction: column;
+  height: 90%;
+}
+
+
+.Lrow1, .Rrow1 {
+  flex: 1;
+  border: 1px solid white;
+  margin-bottom: 10px;
+  border-radius: 22px;
+}
+
+.Lrow2, .Lrow3, .Rrow2 {
+  border: 1px solid white;
+  margin-bottom: 10px;
+  border-radius: 22px;
+}
+
+/* rows */
+.Lrow2, .Lrow3 {
+  flex: 0.1;
+}
+.Rrow2 {
+  flex: 0.2;
+}
+
+/* Additional styles to match the image */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.flex-container {
+  padding: 20px;
+  box-sizing: border-box;
+}
+
