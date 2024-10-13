@@ -1,14 +1,15 @@
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from questions import MATH_QUESTIONS
-from engine import perplexity_query, render_manim_visualization, render_visualization
+from engine import perplexity_query, render_manim_visualization, render_visualization, claude_query
 from dotenv import load_dotenv
 import os
 import json
 import requests
+import logging
 load_dotenv()
 app = Flask(__name__)
-app.secret_key = "jsadjs"
+app.secret_key = "rdagrdsgfdf"
 CORS(app)
 
 api_key = os.getenv("perplexity_api_key")
@@ -96,32 +97,85 @@ def ask_question():
     
     current_question = MATH_QUESTIONS[session['current_question_index']]
     
-    # Prepare context for the AI
     context = f"Question: {current_question['question']}\nTopic: {current_question['topic']}\nDifficulty: {current_question['difficulty']}"
     
-    # Use Perplexity API to generate a response and Manim code
-    ai_response, manim_code = perplexity_query([
-        {"role": "system", "content": "You are an AI tutor helping with SAT/ACT math questions. Provide clear, concise explanations and generate Manim code for visualizations when appropriate."},
-        {"role": "user", "content": f"Context: {context}\nStudent question: {user_question}\nPlease provide an explanation and, if helpful, generate Manim code for a visualization."}
+    # First query: Get the explanation (using Perplexity)
+    explanation, _ = perplexity_query([
+        {"role": "system", "content": "You are an AI tutor helping with SAT/ACT math questions. Provide clear, concise explanations for solving math problems. Focus on step-by-step solutions and key concepts."},
+        {"role": "user", "content": f"Context: {context}\nStudent question: {user_question}\nPlease provide a detailed explanation on how to solve this problem."}
     ])
+
+    if explanation is None:
+        return jsonify({'error': 'Failed to generate explanation from Perplexity API'}), 500
+
+    logging.debug(f"Perplexity explanation: {explanation}")
+
+    # Second query: Get the Manim code (using Claude)
+    engine_code = """
+def render_manim_visualization(code):
+    class CustomScene(Scene):
+        def construct(self):
+            exec(code)
     
-    # Generate visualization if Manim code is provided
+    current_dir = os.getcwd()
+    media_dir = os.path.join(current_dir, "media")
+    videos_dir = os.path.join(media_dir, "videos", "1080p60")
+    
+    os.makedirs(media_dir, exist_ok=True)
+    os.makedirs(videos_dir, exist_ok=True)
+    
+    config.media_dir = media_dir
+    config.video_dir = videos_dir
+    config.output_file = "CustomScene"
+
+    try:
+        scene = CustomScene()
+        scene.render()
+
+        output_path = os.path.join(videos_dir, "CustomScene.mp4")
+        if os.path.exists(output_path):
+            return output_path
+        else:
+            logging.error(f"Output file not found at: {output_path}")
+            return None
+    except Exception as e:
+        logging.error(f"Error rendering visualization: {e}")
+        return None
+    """
+
+    claude_prompt = f"""You are an AI specializing in creating Manim visualizations for math problems. Generate Manim code for a single video animation that will be passed as a parameter to the render_manim_visualization function. Here's the function:
+
+{engine_code}
+
+Context: {context}
+Student question: {user_question}
+Generate Manim code for a single video animation that will be passed as a parameter to the render_manim_visualization function. Provide only the code and comment out any other lines."""
+
+    manim_code = claude_query(claude_prompt)
+
+    if manim_code is None:
+        return jsonify({'error': 'Failed to generate Manim code from Claude API'}), 500
+
+    logging.debug(f"Manim code: {manim_code}")
+
     video_path = None
     if manim_code:
         video_path = render_manim_visualization(manim_code)
-    
-    # Store the conversation
+        if video_path is None:
+            logging.warning("Failed to render Manim visualization")
+
     session['conversation'].append({
         'role': 'user',
         'content': user_question
     })
     session['conversation'].append({
         'role': 'ai',
-        'content': ai_response
+        'content': explanation
     })
     
     return jsonify({
-        'response': ai_response,
+        'response': explanation,
+        'manim_code': manim_code,
         'video_path': video_path
     }), 200
 
