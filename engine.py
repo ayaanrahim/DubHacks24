@@ -84,6 +84,6 @@ def perplexity_query(messages):
     # Extract Manim code if present
     manim_code = None
     if "```python" in content and "```" in content.split("```python")[1]:
-        manim_code = content.split("```python")[1].split("```").strip()
+        manim_code = content.split("```python")[1].split("```")[0].strip()
     
     return content, manim_code

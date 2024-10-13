@@ -8,6 +8,7 @@ import json
 import requests
 load_dotenv()
 app = Flask(__name__)
+app.secret_key = "jsadjs"
 CORS(app)
 
 api_key = os.getenv("perplexity_api_key")
