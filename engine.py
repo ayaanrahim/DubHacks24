@@ -3,22 +3,40 @@ from manim import *
 import os
 import requests
 import json
+import shutil
 
 def render_manim_visualization(code):
     class CustomScene(Scene):
         def construct(self):
             exec(code)
 
-    scene = CustomScene()
-    output_file_name = "output_video"
-    config.media_dir = "/media"
+    # Use the current working directory to ensure we have write permissions
+    current_dir = os.getcwd()
+    media_dir = os.path.join(current_dir, "media")
+    videos_dir = os.path.join(media_dir, "videos", "1080p60")
+    
+    # Ensure the media directory exists
+    os.makedirs(media_dir, exist_ok=True)
+    
+    if os.path.exists(videos_dir):
+        for item in os.listdir(videos_dir):
+            item_path = os.path.join(videos_dir, item)
+            if os.path.isfile(item_path):
+                os.remove(item_path)
+            elif os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+
+    config.media_dir = media_dir
 
     try:
+        scene = CustomScene()
         scene.render()
-        #output_path = os.path.join(config.media_dir, "videos", "1080p60", f"{output_file_name}.mp4")
-        if os.path.exists("media/videos/1080p60/CustomScene.mp4"):
-            return "media/videos/1080p60/CustomScene.mp4"
+
+        output_path = os.path.join(media_dir, "videos", "1080p60", "CustomScene.mp4")
+        if os.path.exists(output_path):
+            return output_path
         else:
+            print(f"Output file not found at: {output_path}")
             return None
     except Exception as e:
         print(f"Error rendering visualization: {e}")
