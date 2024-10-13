@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from questions import MATH_QUESTIONS
-from engine import perplexity_query, render_manim_visualization
+from engine import perplexity_query, render_manim_visualization, render_visualization
 from dotenv import load_dotenv
 import os
 import json
@@ -73,7 +73,6 @@ def submit():
     
     current_question = MATH_QUESTIONS[session['current_question_index']]
     is_correct = abs(float(data['answer']) - current_question['answer']) < 0.001
-    x
     if is_correct:
         session['current_question_index'] += 1
         return jsonify({
@@ -133,15 +132,7 @@ def get_conversation():
 
 @app.route('/api/generate_visualization', methods=['POST'])
 def generate_visualization():
-    data = request.json
-    code = data.get('code', '')
-    
-    video_path = render_manim_visualization(code)
-    
-    if video_path:
-        return jsonify({'video_path': video_path}), 200
-    else:
-        return jsonify({'error': 'Failed to render visualization.'}), 500
+    return render_visualization()
     
 
 

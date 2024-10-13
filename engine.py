@@ -15,9 +15,9 @@ def render_manim_visualization(code):
 
     try:
         scene.render()
-        output_path = os.path.join(config.media_dir, "videos", "CustomScene", "1080p60", f"{output_file_name}.mp4")
-        if os.path.exists(output_path):
-            return f"/media/videos/CustomScene/1080p60/{output_file_name}.mp4"
+        #output_path = os.path.join(config.media_dir, "videos", "1080p60", f"{output_file_name}.mp4")
+        if os.path.exists("media/videos/1080p60/CustomScene.mp4"):
+            return "media/videos/1080p60/CustomScene.mp4"
         else:
             return None
     except Exception as e:
@@ -31,7 +31,7 @@ def render_visualization():
     video_path = render_manim_visualization(code)
 
     if video_path:
-        jsonify({'video_path': video_path}), 200
+        return jsonify({'video_path': video_path}), 200
     else:
         return jsonify({'error': 'Failed to render visualization.'}), 500
     
